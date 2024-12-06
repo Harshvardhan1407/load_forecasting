@@ -1,0 +1,8 @@
+COLUMNS:
+  sensor_id: datetime64[ns]
+  creation_time: datetime64[ns]
+  opening_kwn: object
+  consumed_KWh: float64
+
+TARGET_COLUMN:
+  consumed_KWh: float64
