@@ -7,6 +7,4 @@ COLUMNS:
   R_Current: float64
   Y_Current: float64
   B_Current: float64
-
-TARGET_COLUMN:
-  kWh : float64
+  kWh : float64  
