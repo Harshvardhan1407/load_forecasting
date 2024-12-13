@@ -34,6 +34,8 @@ def get_mongodb_connection(purpose):
     try:
         mongo_host = os.getenv("mongo_host")
         mongo_port = os.getenv("mongo_port")
+        compressor = os.getenv("mongo_compressor")  
+        compression_level = int(os.getenv("mongo_compression_level"))  
 
         if not mongo_host or not mongo_port:
             raise ValueError("MongoDB host or port not found in environment variables")
@@ -56,7 +58,12 @@ def get_mongodb_connection(purpose):
             raise ValueError(f"Database or collection not found for '{purpose}' purpose in environment variables")
 
         # Establish MongoDB connection
-        client = MongoClient(f"mongodb://{mongo_host}:{mongo_port}/")
+        # Establish MongoDB connection with compression
+        client = MongoClient(
+            f"mongodb://{mongo_host}:{mongo_port}/",
+            compressors=compressor,
+            zlibCompressionLevel=compression_level
+        )
         mongo_db = client[m_db]
         mongo_collection = mongo_db[m_collection]
 
