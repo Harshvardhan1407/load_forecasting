@@ -1,0 +1,4 @@
+ingestion_query : {"sensor" : "634e7c43038801.39310596"}
+
+MODEL_PATH : "Models/fine_tuned_september_lstm_model"
+scaler_path : "Models/minmax_scaler_with_rolling.pkl"
