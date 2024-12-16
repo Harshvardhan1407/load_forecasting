@@ -3,7 +3,14 @@ try:
     import numpy as np
     import matplotlib.pyplot as plt
     pd.set_option('display.max_columns', None)
+
+    from dotenv import load_dotenv
+    import yaml
     import os
+
+    # Load .env variables
+    load_dotenv()
+
     plt.rcParams["figure.figsize"]=14,5
     import holidays
     from datetime import timedelta, datetime
@@ -26,10 +33,20 @@ try:
     from math import sqrt
     from pymongo import MongoClient
     from logger import logger
+    from tenacity import retry, stop_after_attempt, wait_fixed
+
 except ImportError as e:
     print(f"error in importing library: {e}")
 
+def load_config():
+    # Load YAML config
+    with open("config.yaml", "r") as f:
+        return yaml.safe_load(f)
 
+config = load_config()
+load_dotenv()
+
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(5))
 def get_mongodb_connection(purpose):
     try:
         mongo_host = os.getenv("mongo_host")
@@ -39,20 +56,15 @@ def get_mongodb_connection(purpose):
 
         if not mongo_host or not mongo_port:
             raise ValueError("MongoDB host or port not found in environment variables")
+        
 
-        purpose_mapping = {
-            "ingestion": ("ingestion_database", "ingestion_collection"),
-            "weather": ("weather_database", "weather_collection"),
-            "prediction": ("prediction_database", "prediction_collection"),
-        }
+        # Get the database and collection names from the YAML config
+        if purpose.lower() not in config["databases"]:
+            raise ValueError(f"Invalid purpose '{purpose}'. Must be one of {list(config['databases'].keys())}")
 
-        if purpose.lower() not in purpose_mapping:
-            raise ValueError(f"Invalid purpose '{purpose}'. Must be one of {list(purpose_mapping.keys())}")
+        m_db = config["databases"][purpose]["database"]
+        m_collection = config["databases"][purpose]["collection"]
 
-        # Fetch corresponding database and collection names
-        db_env, collection_env = purpose_mapping[purpose.lower()]
-        m_db = os.getenv(db_env)
-        m_collection = os.getenv(collection_env)
         # logger.info(f"mongo_db_database: {m_db}, collection: {m_collection}")
         if not m_db or not m_collection:
             raise ValueError(f"Database or collection not found for '{purpose}' purpose in environment variables")
@@ -79,17 +91,19 @@ def load_schema(file_path):
     with open(file_path, "r") as f:
         return yaml.safe_load(f)
 
-def validate_dataframe_schema(df, schema):
-    """Validate if DataFrame adheres to the schema."""
-    expected_columns = schema.get("COLUMNS", {})
-    
-    for col, dtype in expected_columns.items():
-        if col not in df.columns:
-            raise ValueError(f"Missing column: {col}")
-        if str(df[col].dtype) != dtype:
-            raise ValueError(f"Column {col} has invalid type. Expected {dtype}, found {df[col].dtype}")
-
-    logger.info("Schema validation passed")
+def ensure_directory_exists(directory_path):
+    """
+    Ensures the specified directory exists. If not, creates it.
+    """
+    try:
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
+            logger.info(f"Directory created: {directory_path}")
+        else:
+            logger.info(f"Directory already exists: {directory_path}")
+    except Exception as e:
+        logger.error(f"Error creating directory {directory_path}: {e}", exc_info=True)
+        raise
 
 
 
