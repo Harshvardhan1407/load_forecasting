@@ -1,0 +1,26 @@
+model:
+  MODEL_PATH : "Models/fine_tuned_september_lstm_model"
+  scaler_path : "Models/minmax_scaler_with_rolling.pkl"
+
+databases:
+  ingestion:
+    database: "historical_data"
+    collection: "npcl_ht_data"
+  weather:
+    database: "weather_data"
+    collection: "npcl_ht_weather_data"
+  prediction:
+    database: "prediction_db"
+    collection: "prediction_data"
+
+logging:
+  level: "DEBUG"
+  file: "logs/etl_pipeline.log"
+
+ETL :
+  retry_attempts: 3
+  retry_wait_seconds: 5
+  data_path: "datasets/transformed_data"
+
+mongo:
+  query: {"sensor": sensor_id}
