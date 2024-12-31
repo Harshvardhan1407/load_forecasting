@@ -8,3 +8,14 @@ COLUMNS:
   Y_Current: float64
   B_Current: float64
   kWh : float64  
+
+RENAME_COLUMNS:
+  sensor: "sensor"
+  creation_time: "creation_time"
+  R_Voltage: "R_Voltage"
+  Y_Voltage: "Y_Voltage"
+  B_Voltage: "B_Voltage"
+  R_Current: "R_Current"
+  Y_Current: "Y_Current"
+  B_Current: "B_Current"
+  KWh: "kWh"
